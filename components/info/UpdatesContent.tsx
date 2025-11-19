@@ -15,8 +15,8 @@ const UpdateItem: React.FC<{ version: string; date: string; children: React.Reac
 export const UpdatesContent: React.FC = () => {
   return (
     <div>
-        <UpdateItem version="v2.2" date="July 2024">
-            <li>Major Theme Update: Broadened scope from "Avian Palette" to "Creature Palette".</li>
+        <UpdateItem version="v2.2" date="Nov 2025">
+            <li>Major Theme Update: Broadened scope from "Creature Palette" to "Creature Palette".</li>
             <li>The AI can now identify any creature, not just birds.</li>
             <li>Updated all UI text and branding to reflect the new theme.</li>
         </UpdateItem>

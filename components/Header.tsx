@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-baseline select-none">
           <h1 className="text-3xl font-bold tracking-wide">
-            CREATURE<span className="text-orange-500">PALETTE</span> <span className="text-gray-400 text-xl">2.0</span>
+            CREATURE<span className="text-orange-500">PALETTE</span> <span className="text-gray-400 text-xl">1.0</span>
           </h1>
         </div>
         <div className="text-gray-400 italic text-sm hidden sm:block">

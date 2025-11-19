@@ -26,7 +26,7 @@ export const CreditsContent: React.FC = () => {
       </CreditSection>
 
        <CreditSection title="Design Inspiration">
-        <p>The UI and workflow for this application are heavily inspired by the excellent <CreditLink href="https://colorbrewer2.org/">ColorBrewer 2.0</CreditLink>, a tool for color advice in cartography by Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.</p>
+        <p>The UI and workflow for this application are heavily inspired by the excellent <CreditLink href="https://colorbrewer2.org/">ColorBrewer 1.0</CreditLink>, a tool for color advice in cartography by Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.</p>
       </CreditSection>
       
        <CreditSection title="Developer">
