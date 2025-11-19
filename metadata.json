@@ -1,0 +1,5 @@
+{
+  "name": "Creature Palette",
+  "description": "An application to identify creature species from an uploaded image and extract a customizable color palette from it.",
+  "requestFramePermissions": []
+}
