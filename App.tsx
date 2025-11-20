@@ -221,7 +221,7 @@ const App: React.FC = () => {
             )}
 
             <div className="absolute bottom-2 right-4 text-gray-500 text-xs z-0">
-                © Creature Palette, Powered by Google Gemini
+                © Creature Palette, Powered by Chentao Yang
             </div>
         </main>
       </div>
