@@ -53,27 +53,55 @@ const ColorRow: React.FC<{ color: ColorInfo; format: ColorFormat; isCopied: bool
 export const ColorPalette: React.FC<{ colors: ColorInfo[] }> = ({ colors }) => {
   const [format, setFormat] = useState<ColorFormat>('hex');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedAll, setCopiedAll] = useState<boolean>(false);
 
   const handleCopy = (index: number) => {
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
   }
 
+  const handleCopyAll = () => {
+    const values = colors.map((c) => {
+      switch (format) {
+        case 'rgb': return c.rgb;
+        case 'hsl': return c.hsl;
+        default: return c.hex;
+      }
+    });
+    const text = values.join(', ');
+    navigator.clipboard.writeText(text);
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2000);
+  };
+
   return (
     <div>
-      <div className="mb-2 flex justify-end">
-          <div className="inline-flex items-center gap-2 bg-gray-100 p-1 rounded text-xs">
-            <span className="text-gray-500 pl-2">Format:</span>
-            <select 
-                value={format} 
-                onChange={(e) => setFormat(e.target.value as ColorFormat)}
-                className="bg-white border border-gray-200 rounded py-0.5 px-2 text-gray-700 focus:outline-none focus:border-orange-500 cursor-pointer"
-            >
-                <option value="hex">HEX</option>
-                <option value="rgb">RGB</option>
-                <option value="hsl">HSL</option>
-            </select>
-          </div>
+      <div className="mb-2 flex items-center justify-between">
+        <button
+          onClick={handleCopyAll}
+          disabled={!colors.length}
+          className="text-xs bg-gray-100 border border-gray-200 hover:border-orange-400 text-gray-700 px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          aria-label="Copy all colors"
+        >
+          {copiedAll ? (
+            <span className="text-green-600">Copied</span>
+          ) : (
+            <span>Copy All</span>
+          )}
+        </button>
+
+        <div className="inline-flex items-center gap-2 bg-gray-100 p-1 rounded text-xs">
+          <span className="text-gray-500 pl-2">Format:</span>
+          <select 
+              value={format} 
+              onChange={(e) => setFormat(e.target.value as ColorFormat)}
+              className="bg-white border border-gray-200 rounded py-0.5 px-2 text-gray-700 focus:outline-none focus:border-orange-500 cursor-pointer"
+          >
+              <option value="hex">HEX</option>
+              <option value="rgb">RGB</option>
+              <option value="hsl">HSL</option>
+          </select>
+        </div>
       </div>
 
       <div className="flex flex-col gap-0.5">

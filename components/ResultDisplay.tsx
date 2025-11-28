@@ -9,7 +9,7 @@ interface ResultDisplayProps {
 
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ creatureName, description }) => {
   return (
-    <div className="bg-white shadow-xl border border-gray-300 rounded-sm overflow-hidden flex flex-col">
+    <div className="bg-white shadow-xl border border-gray-300 rounded-sm overflow-hidden flex flex-col h-full">
         {/* Header */}
         <div className="bg-slate-800 text-white p-4 border-b border-slate-900 flex items-center justify-between">
             <div>
@@ -24,7 +24,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ creatureName, desc
             </svg>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 flex-1 overflow-auto">
             {/* AI Summary Section */}
             <div className="bg-gray-50 p-4 border-l-4 border-orange-400 rounded-r-md">
                 <h3 className="text-xs font-bold text-gray-500 uppercase mb-2 flex items-center gap-2">

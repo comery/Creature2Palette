@@ -177,39 +177,45 @@ const App: React.FC = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-[#e5e7eb] relative overflow-auto p-4 sm:p-8 flex items-start justify-center gap-8">
+        <main className="flex-1 bg-[#e5e7eb] relative overflow-auto p-4 sm:p-8">
             <div className="absolute inset-0 opacity-5 pointer-events-none" 
                  style={{ backgroundImage: 'linear-gradient(#999 1px, transparent 1px), linear-gradient(90deg, #999 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
             </div>
 
             {previewUrl ? (
-                <>
-                    <div className="flex flex-col gap-4 lg:max-w-sm w-full flex-shrink-0 z-10">
-                        {/* Image container */}
-                        <div className="relative shadow-xl bg-white p-2 border border-gray-300">
-                            <img 
+                <div className="w-full flex flex-col gap-2">
+                    <div className="flex items-start gap-2">
+                        <div className="relative shadow-xl bg-white px-1 py-2 border-[0.5px] border-gray-300 rounded-sm max-w-[360px] w-full h-[50vh] flex flex-col overflow-hidden">
+                            <div className="flex-1 overflow-hidden flex items-center justify-center">
+                              <img 
                                 src={previewUrl} 
                                 alt="Analyzed Creature" 
-                                className="w-full h-auto object-contain block" 
-                            />
-                            <div className="bg-gray-50 border-t border-gray-200 p-2 text-center text-xs text-gray-500">
+                                className="max-w-full max-h-full object-contain block" 
+                              />
+                            </div>
+                            <div className="bg-gray-50 border-t-[0.5px] border-gray-200 px-1 py-2 text-center text-xs text-gray-500">
                                 Original Source Image
                             </div>
                         </div>
 
-                        {/* Pixelated Image */}
-                        {displayedResult && <PixelatedImage imageUrl={previewUrl} />}
-
-                        {/* Extracted Palette */}
-                        {displayedResult && <ExtractedPaletteDisplay colors={displayedResult.colors} />}
-                    </div>
-                    
-                    {displayedResult && (
-                         <div className="w-full max-w-2xl z-10 animate-fade-in flex-1 min-w-0">
+                        {displayedResult && (
+                          <div className="z-10 animate-fade-in min-w-0 h-[50vh] flex-1">
                             <ResultDisplay creatureName={displayedResult.creatureName} description={displayedResult.description} />
+                          </div>
+                        )}
+                    </div>
+
+                    {displayedResult && (
+                      <div className="flex items-start gap-4">
+                        <div className="max-w-[360px] w-full h-[50vh]">
+                          <PixelatedImage imageUrl={previewUrl} />
                         </div>
+                        <div className="w-[280px]">
+                          <ExtractedPaletteDisplay colors={displayedResult.colors} />
+                        </div>
+                      </div>
                     )}
-                </>
+                </div>
             ) : (
                 <div className="text-center text-gray-400 max-w-md m-auto z-10">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,7 +226,7 @@ const App: React.FC = () => {
                 </div>
             )}
 
-            <div className="absolute bottom-2 right-4 text-gray-500 text-xs z-0">
+            <div className="fixed bottom-2 right-4 text-gray-500 text-xs z-50">
                 © Creature Palette, Powered by Chentao Yang
             </div>
         </main>

@@ -21,24 +21,29 @@ const rgbToHex = (r: number, g: number, b: number): string => {
 export const PixelatedImage: React.FC<PixelatedImageProps> = ({ imageUrl }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawAreaRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const colorGrid = useRef<string[][]>([]);
 
   const drawPixelatedImage = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d', { willReadFrequently: true });
-    const container = containerRef.current;
+    const area = drawAreaRef.current;
 
-    if (!canvas || !ctx || !imageUrl || !container) return;
+    if (!canvas || !ctx || !imageUrl || !area) return;
 
     const img = new Image();
     img.crossOrigin = "Anonymous";
     img.src = imageUrl;
 
     img.onload = () => {
-      const displayWidth = container.clientWidth;
-      const scale = displayWidth / img.width;
-      const displayHeight = img.height * scale;
+      const displayWidth = area.clientWidth;
+      const displayHeight = area.clientHeight;
+      const scaleX = displayWidth / img.width;
+      const scaleY = displayHeight / img.height;
+      const scale = Math.min(scaleX, scaleY);
+      const offsetX = Math.floor((displayWidth - img.width * scale) / 2);
+      const offsetY = Math.floor((displayHeight - img.height * scale) / 2);
       canvas.width = displayWidth;
       canvas.height = displayHeight;
 
@@ -75,7 +80,7 @@ export const PixelatedImage: React.FC<PixelatedImageProps> = ({ imageUrl }) => {
           row.push(rgbToHex(r, g, b));
 
           ctx.fillStyle = avgColor;
-          ctx.fillRect(x * scale, y * scale, w * scale, h * scale);
+          ctx.fillRect(offsetX + x * scale, offsetY + y * scale, w * scale, h * scale);
         }
         newGrid.push(row);
       }
@@ -88,8 +93,8 @@ export const PixelatedImage: React.FC<PixelatedImageProps> = ({ imageUrl }) => {
     const resizeObserver = new ResizeObserver(() => {
       drawPixelatedImage();
     });
-    if (containerRef.current) {
-        resizeObserver.observe(containerRef.current);
+    if (drawAreaRef.current) {
+        resizeObserver.observe(drawAreaRef.current);
     }
     return () => resizeObserver.disconnect();
   }, [drawPixelatedImage]);
@@ -127,14 +132,16 @@ export const PixelatedImage: React.FC<PixelatedImageProps> = ({ imageUrl }) => {
   };
   
   return (
-    <div ref={containerRef} className="relative shadow-xl bg-white p-2 border border-gray-300">
-      <canvas 
-        ref={canvasRef} 
-        onMouseMove={handleMouseMove}
-        onMouseOut={handleMouseOut}
-        className="w-full h-auto block"
-      />
-       <div className="bg-gray-50 border-t border-gray-200 p-2 text-center text-xs text-gray-500">
+    <div ref={containerRef} className="relative shadow-xl bg-white px-1 py-2 border-[0.5px] border-gray-300 rounded-sm w-full overflow-hidden h-[50vh] flex flex-col">
+      <div ref={drawAreaRef} className="flex-1 overflow-hidden">
+        <canvas 
+          ref={canvasRef} 
+          onMouseMove={handleMouseMove}
+          onMouseOut={handleMouseOut}
+          className="w-full h-full block"
+        />
+      </div>
+      <div className="bg-gray-50 border-t-[0.5px] border-gray-200 px-1 py-2 text-center text-xs text-gray-500">
           Pixelated View (Hover for color)
       </div>
       {tooltip?.visible && (
