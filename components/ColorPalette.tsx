@@ -50,10 +50,46 @@ const ColorRow: React.FC<{ color: ColorInfo; format: ColorFormat; isCopied: bool
   );
 };
 
+const ColorBlock: React.FC<{ color: ColorInfo; format: ColorFormat; isCopied: boolean; onCopy: () => void; isLast: boolean; blockWidth: number; }> = ({ color, format, isCopied, onCopy, isLast, blockWidth }) => {
+  const getValue = () => {
+    switch(format) {
+      case 'rgb': return color.rgb;
+      case 'hsl': return color.hsl;
+      default: return color.hex;
+    }
+  };
+  const value = getValue();
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(value);
+    onCopy();
+  };
+
+  const charCount = value.length;
+  const fontPx = Math.max(9, Math.min(14, Math.floor((blockWidth - 12) / (charCount * 0.7))));
+  return (
+    <div 
+      onClick={handleCopy}
+      className={`relative h-16 md:h-20 ${isLast ? '' : 'border-r-[0.5px] border-white/40'} cursor-pointer`} 
+      style={{ backgroundColor: color.hex, width: blockWidth }}
+      aria-label={`Color ${value}`}
+    >
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-mono text-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]" style={{ fontSize: fontPx }}>{value}</span>
+      </div>
+      {isCopied && (
+        <div className="absolute bottom-1 right-1 bg-white/80 text-green-700 rounded px-1 py-0.5 text-[10px]">Copied</div>
+      )}
+    </div>
+  );
+};
+
 export const ColorPalette: React.FC<{ colors: ColorInfo[] }> = ({ colors }) => {
   const [format, setFormat] = useState<ColorFormat>('hex');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState<boolean>(false);
+  const BLOCK_WIDTH = 96;
 
   const handleCopy = (index: number) => {
       setCopiedIndex(index);
@@ -76,7 +112,7 @@ export const ColorPalette: React.FC<{ colors: ColorInfo[] }> = ({ colors }) => {
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center gap-2">
         <button
           onClick={handleCopyAll}
           disabled={!colors.length}
@@ -89,7 +125,6 @@ export const ColorPalette: React.FC<{ colors: ColorInfo[] }> = ({ colors }) => {
             <span>Copy All</span>
           )}
         </button>
-
         <div className="inline-flex items-center gap-2 bg-gray-100 p-1 rounded text-xs">
           <span className="text-gray-500 pl-2">Format:</span>
           <select 
@@ -104,16 +139,20 @@ export const ColorPalette: React.FC<{ colors: ColorInfo[] }> = ({ colors }) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-0.5">
-        {colors.map((color, index) => (
-          <ColorRow 
-            key={index} 
-            color={color} 
-            format={format}
-            isCopied={copiedIndex === index}
-            onCopy={() => handleCopy(index)}
-          />
-        ))}
+      <div className="inline-block overflow-hidden rounded-sm border-[0.5px] border-gray-300" style={{ width: Math.min(colors.length, 12) * BLOCK_WIDTH }}>
+        <div className="flex" style={{ width: colors.length * BLOCK_WIDTH }}>
+          {colors.map((color, index) => (
+            <ColorBlock 
+              key={index}
+              color={color}
+              format={format}
+              isCopied={copiedIndex === index}
+              onCopy={() => handleCopy(index)}
+              isLast={index === colors.length - 1}
+              blockWidth={BLOCK_WIDTH}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { Header } from './components/Header';
 import { ImageUploader } from './components/ImageUploader';
 import { ResultDisplay } from './components/ResultDisplay';
 import { Loader } from './components/Loader';
-import { analyzeCreatureImage, fileToBase64 } from './services/geminiService';
+import { analyzeCreatureImage, fileToBase64, extractDominantColorsFromFile, classifyAIError } from './services/geminiService';
 import type { AnalysisResult } from './types';
 import { Modal } from './components/Modal';
 import { HowToUseContent } from './components/info/HowToUseContent';
@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType | null>(null);
+  const [modelProvider, setModelProvider] = useState<'gemini' | 'deepseek' | 'kimi' | 'qwen'>('gemini');
 
 
   const handleImageChange = (file: File | null) => {
@@ -52,16 +53,23 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      const { base64Data, mimeType } = await fileToBase64(imageFile);
-      const analysisResult = await analyzeCreatureImage(base64Data, mimeType);
-      setFullResult(analysisResult);
-    // FIX: Added missing opening brace for the catch block.
+      if (modelProvider === 'gemini') {
+        const { base64Data, mimeType } = await fileToBase64(imageFile);
+        const analysisResult = await analyzeCreatureImage(base64Data, mimeType);
+        setFullResult(analysisResult);
+      } else {
+        const fallbackColors = await extractDominantColorsFromFile(imageFile, colorCount);
+        setFullResult({ creatureName: '', description: '', colors: fallbackColors });
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+      const fallbackColors = await extractDominantColorsFromFile(imageFile, colorCount);
+      setFullResult({ creatureName: '', description: '', colors: fallbackColors });
+      const info = classifyAIError(err);
+      setError(`${info.message} Showing colors only; species info unavailable.`);
     } finally {
       setLoading(false);
     }
-  }, [imageFile]);
+  }, [imageFile, colorCount, modelProvider]);
 
   const displayedResult = useMemo(() => {
     if (!fullResult) return null;
@@ -118,6 +126,19 @@ const App: React.FC = () => {
                         />
                         <div className="bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs text-gray-500 cursor-help" title="Select the number of dominant colors to extract from the image.">i</div>
                      </div>
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                     <h3 className="font-bold text-gray-700 text-sm">AI Model:</h3>
+                     <select 
+                        value={modelProvider}
+                        onChange={(e) => setModelProvider(e.target.value as 'gemini' | 'deepseek' | 'kimi' | 'qwen')}
+                        className="bg-white border border-gray-300 rounded py-1 px-2 text-xs text-gray-700 focus:outline-none focus:border-orange-500 cursor-pointer w-32"
+                     >
+                        <option value="gemini">Gemini</option>
+                        <option value="qwen">Qwen</option>
+                        <option value="kimi">Kimi K2</option>
+                        <option value="deepseek">DeepSeek</option>
+                     </select>
                 </div>
                
                 <p className="text-xs text-gray-400 mt-2">
@@ -198,21 +219,20 @@ const App: React.FC = () => {
                             </div>
                         </div>
 
-                        {displayedResult && (
-                          <div className="z-10 animate-fade-in min-w-0 h-[50vh] flex-1">
+                        <div className="max-w-[360px] w-full h-[50vh]">
+                          <PixelatedImage imageUrl={previewUrl} />
+                        </div>
+
+                    {displayedResult && displayedResult.creatureName && displayedResult.description && (
+                         <div className="z-10 animate-fade-in min-w-0 h-[50vh] flex-1">
                             <ResultDisplay creatureName={displayedResult.creatureName} description={displayedResult.description} />
                           </div>
                         )}
                     </div>
 
                     {displayedResult && (
-                      <div className="flex items-start gap-4">
-                        <div className="max-w-[360px] w-full h-[50vh]">
-                          <PixelatedImage imageUrl={previewUrl} />
-                        </div>
-                        <div className="w-[280px]">
-                          <ExtractedPaletteDisplay colors={displayedResult.colors} />
-                        </div>
+                      <div className="mt-2">
+                        <ExtractedPaletteDisplay colors={displayedResult.colors} />
                       </div>
                     )}
                 </div>

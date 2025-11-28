@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 
 interface ImageUploaderProps {
   onImageChange: (file: File | null) => void;
@@ -7,6 +7,8 @@ interface ImageUploaderProps {
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageChange, previewUrl }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [urlInput, setUrlInput] = useState<string>("");
+  const [urlError, setUrlError] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -29,6 +31,44 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageChange, pre
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
+  };
+
+  const guessMimeFromUrl = (url: string): string | undefined => {
+    const ext = url.split('?')[0].split('#')[0].split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      default:
+        return undefined;
+    }
+  };
+
+  const handleLoadFromUrl = async () => {
+    setUrlError(null);
+    const url = urlInput.trim();
+    if (!url) {
+      setUrlError('Please enter an image URL');
+      return;
+    }
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error('Failed to fetch');
+      const blob = await res.blob();
+      const mime = blob.type || guessMimeFromUrl(url) || 'image/jpeg';
+      if (!mime.startsWith('image/')) throw new Error('Not an image');
+      const name = url.split('/').pop() || 'remote-image';
+      const file = new File([blob], name, { type: mime });
+      onImageChange(file);
+    } catch (e) {
+      setUrlError('Unable to load image from URL');
+    }
   };
 
   return (
@@ -71,6 +111,28 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageChange, pre
             </>
         )}
         </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleLoadFromUrl();
+            }}
+            placeholder="https://example.com/image.jpg"
+            className="flex-1 bg-white border border-gray-300 rounded-sm px-2 py-1 text-xs focus:outline-none focus:border-orange-400"
+          />
+          <button
+            onClick={handleLoadFromUrl}
+            className="text-xs bg-gray-100 border border-gray-200 hover:border-orange-400 text-gray-700 px-2 py-1 rounded"
+          >
+            Load URL
+          </button>
+        </div>
+        {urlError && (
+          <div className="text-xs text-red-600">{urlError}</div>
+        )}
     </div>
   );
 };
